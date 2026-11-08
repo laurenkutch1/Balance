@@ -1,0 +1,467 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Balance</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap">
+<style>
+/* Layout: one calm column, three tabs; the first tab splits into plan + timer on wide screens. */
+:root{
+  --bg:#EAF0EE; --surface:#F7FAF9; --ink:#14302D; --muted:#56706B; --line:#CBD8D4;
+  --accent:#1F6B5C; --accent-ink:#FFFFFF; --soft:#DCE9E5;
+  --hi:#A83A1C; --mid:#8A5F00; --lo:#2F6E55; --break:#E9D9A6; --break-ink:#4A3A07;
+  --font-display:'Bricolage Grotesque','Avenir Next',system-ui,sans-serif;
+  --font-body:'Figtree','Avenir Next',system-ui,sans-serif;
+  --font-journal:'Newsreader',Georgia,serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1C1A; --surface:#152421; --ink:#E3EEEB; --muted:#95ADA8; --line:#2A423E;
+  --accent:#6CC4AE; --accent-ink:#0B1D1A; --soft:#1E3430;
+  --hi:#F08A6B; --mid:#E2B64F; --lo:#7FCBA6; --break:#3D3516; --break-ink:#F1E3B0;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1C1A; --surface:#152421; --ink:#E3EEEB; --muted:#95ADA8; --line:#2A423E;
+  --accent:#6CC4AE; --accent-ink:#0B1D1A; --soft:#1E3430;
+  --hi:#F08A6B; --mid:#E2B64F; --lo:#7FCBA6; --break:#3D3516; --break-ink:#F1E3B0;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--font-body);
+  padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app{max-width:980px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:1.5rem;line-height:1.2}
+h3{font-size:1.05rem}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.top{display:flex;flex-direction:column;gap:10px;padding-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand h1{font-size:2rem;font-weight:700}
+.mark{width:24px;height:24px;border-radius:50%;border:2.5px solid var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}
+.tag{color:var(--muted);max-width:60ch}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;padding:10px 14px;cursor:pointer;color:var(--muted);font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--ink)}
+.panel{display:none;padding-top:22px}
+.panel.on{display:block}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:780px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.lede{color:var(--muted);font-size:.95rem}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px;flex:1 1 150px;min-width:0}
+.field.wide{flex-basis:100%}
+label,.lab{font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=date],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+input[type=date]{min-height:42px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--soft);filter:none}
+.btn.sm{padding:6px 11px;font-size:.88rem}
+.linkbtn{background:none;border:0;color:var(--muted);cursor:pointer;text-decoration:underline;padding:4px;font-size:.85rem}
+.linkbtn:hover{color:var(--ink)}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.steps li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.steps .n{font-family:var(--font-display);font-weight:700;color:var(--accent);text-align:center}
+.hint{background:var(--soft);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.timer{align-items:stretch}
+.clock{font-family:var(--font-display);font-weight:700;font-size:4rem;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.mode{display:inline-block;font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--ink)}
+.mode.brk{background:var(--break);color:var(--break-ink)}
+.bar{height:6px;border-radius:99px;background:var(--soft);overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
+.note{border-radius:8px;padding:12px 14px;background:var(--break);color:var(--break-ink);font-weight:500}
+.note[hidden]{display:none}
+.sum{font-size:1.02rem}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:transparent;border:1px solid var(--line);border-radius:99px;padding:5px 13px;cursor:pointer;font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px}
+.item.done .ttl{text-decoration:line-through;color:var(--muted)}
+.item input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);margin-top:3px}
+.ttl{font-weight:600;overflow-wrap:anywhere}
+.meta{display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center;font-size:.9rem;color:var(--muted)}
+.meta .over{color:var(--hi);font-weight:600}
+.pill{font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:99px;padding:1px 8px}
+.ex{background:var(--soft);border-color:transparent;color:var(--ink)}
+.ctl{grid-column:2;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.ctl select,.ctl input[type=date]{width:auto;padding:5px 8px;font-size:.88rem;min-height:0}
+select[data-p="high"]{color:var(--hi);font-weight:600}
+select[data-p="medium"]{color:var(--mid);font-weight:600}
+select[data-p="low"]{color:var(--lo);font-weight:600}
+details{grid-column:2;margin-top:4px}
+summary{cursor:pointer;font-size:.9rem;color:var(--accent);font-weight:600}
+.sub{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+.sub label{display:flex;gap:8px;align-items:flex-start;text-transform:none;letter-spacing:0;font-size:.95rem;font-weight:400;color:var(--ink);cursor:pointer}
+.sub input{accent-color:var(--accent);margin-top:4px}
+.sub .d{text-decoration:line-through;color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:22px;color:var(--muted);text-align:center}
+.paper{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.prompt{font-family:var(--font-journal);font-style:italic;font-size:1.35rem;line-height:1.35}
+.ruled{font-family:var(--font-journal);font-style:italic;font-size:1.15rem;line-height:32px;min-height:224px;resize:vertical;padding:0 4px;border:0;border-radius:0;
+  background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--line) 31px,var(--line) 32px)}
+.entries{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.entry{border-left:3px solid var(--line);padding:2px 0 2px 14px}
+.entry .when{font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.entry .q{font-family:var(--font-journal);font-style:italic;color:var(--muted)}
+.entry .body{font-family:var(--font-journal);font-style:italic;font-size:1.1rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0}
+.foot{margin-top:28px;color:var(--muted);font-size:.85rem}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:500;max-width:calc(100% - 32px)}
+.toast[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){.bar>i{transition:none}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="mark" aria-hidden="true"></span><h1>Balance</h1></div>
+    <p class="tag">Break big assignments into small steps, keep every deadline in one place, and write down how you're doing.</p>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="t-breakdown" data-tab="breakdown">Break it down</button>
+      <button role="tab" id="t-planner" data-tab="planner">Planner</button>
+      <button role="tab" id="t-journal" data-tab="journal">Journal</button>
+    </nav>
+  </header>
+
+  <!-- Feature 1: task breaker + break reminders -->
+  <section class="panel" id="p-breakdown" role="tabpanel" aria-labelledby="t-breakdown">
+    <div class="grid2">
+      <div class="card">
+        <div>
+          <h2>Start with one assignment</h2>
+          <p class="lede">Tell Balance what is due and it splits the work into small steps you can finish one at a time.</p>
+        </div>
+        <form id="bd-form" class="row" autocomplete="off">
+          <div class="field wide"><label for="bd-title">Assignment</label><input type="text" id="bd-title" required></div>
+          <div class="field"><label for="bd-type">Type of work</label>
+            <select id="bd-type">
+              <option value="essay">Essay or paper</option>
+              <option value="pset">Problem set</option>
+              <option value="exam">Exam prep</option>
+              <option value="project">Group project</option>
+            </select></div>
+          <div class="field"><label for="bd-date">Due date</label><input type="date" id="bd-date" required></div>
+          <div class="field"><label for="bd-pri">Priority</label>
+            <select id="bd-pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
+          <div class="field wide"><button class="btn" type="submit">Break it down</button></div>
+        </form>
+        <div class="hint" id="bd-hint" aria-live="polite"></div>
+        <ol class="steps" id="bd-steps"></ol>
+        <div class="row">
+          <div class="field"><label for="bd-add">Add your own step</label><input type="text" id="bd-add" placeholder="e.g. Email the TA about the rubric"></div>
+          <div class="field" style="flex:0 0 auto;justify-content:flex-end"><button class="btn ghost" type="button" id="bd-addbtn">Add step</button></div>
+        </div>
+        <div class="row" style="align-items:center">
+          <button class="btn" type="button" id="bd-save">Add to planner</button>
+          <span class="lede">Steps and dates can be changed later.</span>
+        </div>
+      </div>
+
+      <div class="card timer">
+        <div>
+          <h2>Focus, then rest</h2>
+          <p class="lede">Work on one step. When time is up, Balance tells you to take a break.</p>
+        </div>
+        <div class="field"><label for="tm-step">Working on</label><select id="tm-step"></select></div>
+        <div class="field"><label for="tm-len">Session length</label>
+          <select id="tm-len">
+            <option value="1500,300">25 min focus, 5 min break</option>
+            <option value="3000,600">50 min focus, 10 min break</option>
+            <option value="60,15">Try it: 1 min focus, 15 sec break</option>
+          </select></div>
+        <div class="row" style="align-items:center;justify-content:space-between">
+          <span class="mode" id="tm-mode">Focus</span>
+        </div>
+        <div class="clock" id="tm-clock" role="timer" aria-live="off">25:00</div>
+        <div class="bar" aria-hidden="true"><i id="tm-bar"></i></div>
+        <div class="note" id="tm-note" role="status" aria-live="polite" hidden></div>
+        <div class="row">
+          <button class="btn" type="button" id="tm-go">Start focus</button>
+          <button class="btn ghost" type="button" id="tm-reset">Reset</button>
+          <button class="btn ghost" type="button" id="tm-done" hidden>Mark step done</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature 2: one-page planner -->
+  <section class="panel" id="p-planner" role="tabpanel" aria-labelledby="t-planner">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div>
+        <h2>Everything due, in one place</h2>
+        <p class="sum" id="pl-sum" aria-live="polite"></p>
+      </div>
+      <form id="pl-form" class="card row" autocomplete="off" aria-label="Add something">
+        <div class="field" style="flex:2 1 220px"><label for="pl-title">Add to your list</label><input type="text" id="pl-title" placeholder="Chem lab report, dentist, laundry…" required></div>
+        <div class="field"><label for="pl-kind">Kind</label>
+          <select id="pl-kind"><option value="assignment">Assignment</option><option value="exam">Exam</option><option value="personal">Personal</option></select></div>
+        <div class="field"><label for="pl-date">Due</label><input type="date" id="pl-date" required></div>
+        <div class="field"><label for="pl-pri">Priority</label>
+          <select id="pl-pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
+        <div class="field" style="flex:0 0 auto;justify-content:flex-end"><button class="btn" type="submit">Add</button></div>
+      </form>
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div class="chips" id="pl-filter" role="group" aria-label="Filter">
+          <button class="chip" type="button" data-f="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-f="assignment" aria-pressed="false">Assignments</button>
+          <button class="chip" type="button" data-f="exam" aria-pressed="false">Exams</button>
+          <button class="chip" type="button" data-f="personal" aria-pressed="false">Personal</button>
+        </div>
+        <button class="linkbtn" type="button" id="pl-clear">Remove example items</button>
+      </div>
+      <ul class="list" id="pl-list"></ul>
+    </div>
+  </section>
+
+  <!-- Feature 3: journal -->
+  <section class="panel" id="p-journal" role="tabpanel" aria-labelledby="t-journal">
+    <div style="max-width:720px;display:flex;flex-direction:column;gap:16px">
+      <div class="paper">
+        <div class="lab" id="jn-date"></div>
+        <p class="prompt" id="jn-prompt"></p>
+        <label for="jn-text" class="lab" style="position:absolute;left:-9999px">Your entry</label>
+        <textarea id="jn-text" class="ruled" placeholder="Write as much or as little as you like."></textarea>
+        <div class="row" style="align-items:center">
+          <button class="btn" type="button" id="jn-save">Save entry</button>
+          <button class="btn ghost" type="button" id="jn-shuffle">Different prompt</button>
+        </div>
+      </div>
+      <h3>Past entries</h3>
+      <div class="entries" id="jn-list"></div>
+    </div>
+  </section>
+
+  <p class="foot">Everything is saved in this browser only. No account needed.</p>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(n)=>{const d=new Date();d.setDate(d.getDate()+n);return ds(d)};
+const diff=(s)=>Math.round((parse(s)-parse(ds(new Date())))/86400000);
+const fmt=s=>new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric'}).format(parse(s));
+const fmtLong=s=>new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric'}).format(parse(s));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const rel=n=>n<0?'overdue by '+(-n)+(n===-1?' day':' days'):n===0?'due today':n===1?'due tomorrow':'due in '+n+' days';
+
+const TEMPLATES={
+  essay:['Read the prompt and rubric','Pick a topic and write a one-sentence thesis','Find 3 to 5 sources','Outline the main points','Draft the introduction','Draft the body paragraphs','Draft the conclusion','Revise and proofread'],
+  pset:['Skim every problem','Do the easiest problems first','Attempt the hard problems','Check your answers','Write down questions for office hours','Submit'],
+  exam:['List every topic the exam covers','Gather notes and readings','Make a one-page summary sheet','Do practice problems','Review the topics you missed','Plan an early night before the exam'],
+  project:['Write the goal in one sentence','Split the work into parts','Agree who does what and by when','Build your first part','Share progress with the group','Combine the parts','Rehearse and submit']
+};
+const TYPE_KIND={essay:'assignment',pset:'assignment',exam:'exam',project:'assignment'};
+const PROMPTS=['What is one thing that went better than you expected this week?','What is taking up the most room in your head right now?','What would make tomorrow feel a little lighter?','Who or what helped you today?','What are you putting off, and what is the smallest first step?','How did your body feel today, and what does it need?','What are you proud of that nobody saw?','If today had a title, what would it be?','What is one thing you can let go of this week?','What do you want to remember about this semester?'];
+const BREAKS=['Stand up and stretch.','Drink some water.','Look out a window for a minute.','Walk to the end of the hall and back.','Close your eyes and breathe slowly.'];
+
+function mkSteps(list,doneCount){return list.map((t,i)=>({t,d:i<(doneCount||0)}))}
+function seed(){
+  return {items:[
+    {id:uid(),ex:1,title:'Sociology paper on social media and sleep',kind:'assignment',due:addDays(5),pri:'high',done:false,steps:mkSteps(TEMPLATES.essay,2)},
+    {id:uid(),ex:1,title:'Statistics problem set 6',kind:'assignment',due:addDays(2),pri:'medium',done:false,steps:mkSteps(TEMPLATES.pset,1)},
+    {id:uid(),ex:1,title:'Biology midterm',kind:'exam',due:addDays(9),pri:'high',done:false,steps:mkSteps(TEMPLATES.exam,0)},
+    {id:uid(),ex:1,title:'Call the pharmacy about a refill',kind:'personal',due:addDays(1),pri:'low',done:false,steps:[]}
+  ],journal:[{id:uid(),ex:1,date:addDays(-1),prompt:PROMPTS[0],text:'Got the stats problem set started early. It was less scary once I wrote down the first problem.'}],promptShift:0};
+}
+const KEY='balance-mvp-v1';
+let mem=null;
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.items&&s.journal)return s}catch(e){}return mem||seed()}
+function save(){mem=state;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+let state=load();
+
+let toastT;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},2600)}
+
+/* ---------- tabs ---------- */
+const TABS=['breakdown','planner','journal'];
+function show(name){
+  if(!TABS.includes(name))name='breakdown';
+  TABS.forEach(t=>{
+    const on=t===name;
+    $('#p-'+t).classList.toggle('on',on);
+    const b=$('#t-'+t);b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;
+  });
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{location.hash=b.dataset.tab;show(b.dataset.tab)}));
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+
+/* ---------- Feature 1: breakdown ---------- */
+let draft={title:'',type:'essay',date:'',pri:'medium',steps:[]};
+function genDraft(){
+  draft={title:$('#bd-title').value.trim(),type:$('#bd-type').value,date:$('#bd-date').value,pri:$('#bd-pri').value,steps:TEMPLATES[$('#bd-type').value].slice()};
+  renderDraft();
+}
+function renderDraft(){
+  const ol=$('#bd-steps');ol.innerHTML='';
+  draft.steps.forEach((s,i)=>{
+    const li=document.createElement('li');
+    li.innerHTML='<span class="n">'+(i+1)+'</span><span>'+esc(s)+'</span><button type="button" class="linkbtn" data-rm="'+i+'" aria-label="Remove step '+(i+1)+'">Remove</button>';
+    ol.appendChild(li);
+  });
+  const n=draft.steps.length,days=draft.date?diff(draft.date):null;let h;
+  if(!n)h='No steps yet. Add one below.';
+  else if(days===null)h=n+' steps. Pick a due date to see a pace.';
+  else if(days<0)h=n+' steps, and this is already overdue. Start with step 1 today.';
+  else if(days===0)h=n+' steps and it is due today. Start with step 1 now.';
+  else if(n<=days){const e=Math.floor(days/n);h=n+' steps over '+days+(days===1?' day':' days')+'. Finish one step about every '+(e===1?'day':e+' days')+'.'}
+  else h=n+' steps over '+days+(days===1?' day':' days')+'. That is about '+Math.ceil(n/days)+' steps a day.';
+  $('#bd-hint').textContent=h;
+}
+$('#bd-form').addEventListener('submit',e=>{e.preventDefault();genDraft()});
+$('#bd-date').addEventListener('change',()=>{draft.date=$('#bd-date').value;renderDraft()});
+$('#bd-steps').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(b){draft.steps.splice(+b.dataset.rm,1);renderDraft()}});
+function addOwn(){const v=$('#bd-add').value.trim();if(!v)return;draft.steps.push(v);$('#bd-add').value='';renderDraft()}
+$('#bd-addbtn').addEventListener('click',addOwn);
+$('#bd-add').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addOwn()}});
+$('#bd-save').addEventListener('click',()=>{
+  const title=$('#bd-title').value.trim(),date=$('#bd-date').value;
+  if(!title||!date){toast('Add a title and due date first.');return}
+  draft.title=title;draft.date=date;draft.pri=$('#bd-pri').value;
+  state.items.push({id:uid(),title,kind:TYPE_KIND[$('#bd-type').value],due:date,pri:draft.pri,done:false,steps:mkSteps(draft.steps)});
+  save();renderAll();toast('Added to your planner.');
+});
+
+/* ---------- Focus timer ---------- */
+const T={mode:'focus',total:1500,left:1500,end:0,run:false,iv:null,justFocused:false};
+const cfg=()=>{const [f,b]=$('#tm-len').value.split(',').map(Number);return{f,b}};
+function setMode(m){T.mode=m;T.total=m==='focus'?cfg().f:cfg().b;T.left=T.total}
+function paintTimer(){
+  const m=Math.floor(T.left/60),s=T.left%60;
+  $('#tm-clock').textContent=pad(m)+':'+pad(s);
+  $('#tm-bar').style.width=(100*(T.total-T.left)/T.total)+'%';
+  const md=$('#tm-mode');md.textContent=T.mode==='focus'?'Focus':'Break';md.classList.toggle('brk',T.mode!=='focus');
+  $('#tm-go').textContent=T.run?'Pause':(T.left<T.total?'Resume':(T.mode==='focus'?'Start focus':'Start break'));
+}
+function stopIv(){clearInterval(T.iv);T.iv=null;T.run=false}
+function tick(){
+  T.left=Math.max(0,Math.ceil((T.end-Date.now())/1000));paintTimer();
+  if(T.left===0){
+    stopIv();const note=$('#tm-note');note.hidden=false;
+    if(T.mode==='focus'){
+      const act=BREAKS[Math.floor(Math.random()*BREAKS.length)];
+      setMode('break');note.textContent='Time for a break. '+act+' Your break is '+(cfg().b>=60?cfg().b/60+' minutes':cfg().b+' seconds')+'.';
+      T.justFocused=true;$('#tm-done').hidden=!$('#tm-step').value;
+    }else{
+      setMode('focus');note.textContent='Break is over. Ready for the next step?';$('#tm-done').hidden=true;
+    }
+    paintTimer();
+  }
+}
+$('#tm-go').addEventListener('click',()=>{
+  if(T.run){T.left=Math.max(0,Math.ceil((T.end-Date.now())/1000));stopIv();paintTimer();return}
+  $('#tm-note').hidden=true;$('#tm-done').hidden=true;
+  T.end=Date.now()+T.left*1000;T.run=true;T.iv=setInterval(tick,250);paintTimer();
+});
+$('#tm-reset').addEventListener('click',()=>{stopIv();setMode('focus');$('#tm-note').hidden=true;$('#tm-done').hidden=true;paintTimer()});
+$('#tm-len').addEventListener('change',()=>{if(!T.run){setMode(T.mode);paintTimer()}});
+$('#tm-done').addEventListener('click',()=>{
+  const v=$('#tm-step').value;if(!v)return;
+  const [id,i]=v.split('|');const it=state.items.find(x=>x.id===id);
+  if(it&&it.steps[i]){it.steps[i].d=true;save();renderAll();toast('Step marked done.')}
+  $('#tm-done').hidden=true;
+});
+function renderStepSelect(){
+  const sel=$('#tm-step'),cur=sel.value;sel.innerHTML='<option value="">Anything (no specific step)</option>';
+  state.items.filter(i=>!i.done).forEach(it=>{
+    const idx=it.steps.findIndex(s=>!s.d);
+    if(idx>=0){const o=document.createElement('option');o.value=it.id+'|'+idx;o.textContent=it.title+': '+it.steps[idx].t;sel.appendChild(o)}
+  });
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+}
+
+/* ---------- Feature 2: planner ---------- */
+let filter='all';const openIds=new Set();
+const PR={high:0,medium:1,low:2};
+function cmp(a,b){
+  if(a.done!==b.done)return a.done?1:-1;
+  if(a.due!==b.due)return a.due<b.due?-1:1;
+  return PR[a.pri]-PR[b.pri];
+}
+const KIND={assignment:'Assignment',exam:'Exam',personal:'Personal'};
+function renderSummary(){
+  const open=state.items.filter(i=>!i.done).sort(cmp);
+  const el=$('#pl-sum');
+  if(!open.length){el.textContent='Nothing left to do. Add something below, or take the evening off.';return}
+  const soon=open.filter(i=>diff(i.due)<=7).length,over=open.filter(i=>diff(i.due)<0).length,nx=open[0];
+  let t=soon+(soon===1?' item is':' items are')+' due in the next 7 days. ';
+  if(over)t=over+(over===1?' item is':' items are')+' overdue. '+t;
+  t+='Next up: '+nx.title+', '+rel(diff(nx.due))+'.';
+  el.textContent=t;
+}
+function renderPlanner(){
+  const list=$('#pl-list');
+  const items=state.items.filter(i=>filter==='all'||i.kind===filter).sort(cmp);
+  if(!items.length){list.innerHTML='<li class="empty">Nothing here yet. Add an assignment, exam or personal task above.</li>';return}
+  list.innerHTML=items.map(it=>{
+    const n=diff(it.due),done=it.steps.filter(s=>s.d).length;
+    const steps=it.steps.length?'<details data-id="'+it.id+'"'+(openIds.has(it.id)?' open':'')+'><summary>'+done+' of '+it.steps.length+' steps done</summary><ul class="sub">'+
+      it.steps.map((s,i)=>'<li><label><input type="checkbox" data-step="'+it.id+'|'+i+'"'+(s.d?' checked':'')+'><span class="'+(s.d?'d':'')+'">'+esc(s.t)+'</span></label></li>').join('')+'</ul></details>':'';
+    return '<li class="item'+(it.done?' done':'')+'"><input type="checkbox" data-done="'+it.id+'" aria-label="Mark '+esc(it.title)+' done"'+(it.done?' checked':'')+'>'+
+      '<div><div class="ttl">'+esc(it.title)+'</div><div class="meta"><span class="pill">'+KIND[it.kind]+'</span>'+
+      (it.ex?'<span class="pill ex">Example</span>':'')+
+      '<span class="'+(n<0&&!it.done?'over':'')+'">'+fmt(it.due)+' · '+rel(n)+'</span></div></div>'+
+      '<div class="ctl"><select data-p="'+it.pri+'" data-pri="'+it.id+'" aria-label="Priority for '+esc(it.title)+'">'+
+      ['high','medium','low'].map(p=>'<option value="'+p+'"'+(p===it.pri?' selected':'')+'>'+p[0].toUpperCase()+p.slice(1)+' priority</option>').join('')+'</select>'+
+      '<input type="date" value="'+it.due+'" data-due="'+it.id+'" aria-label="Move due date for '+esc(it.title)+'">'+
+      '<button class="linkbtn" type="button" data-del="'+it.id+'">Delete</button></div>'+steps+'</li>';
+  }).join('');
+}
+const byId=id=>state.items.find(i=>i.id===id);
+$('#pl-list').addEventListener('change',e=>{
+  const t=e.target;let it;
+  if(t.dataset.done&&(it=byId(t.dataset.done)))it.done=t.checked;
+  else if(t.dataset.pri&&(it=byId(t.dataset.pri)))it.pri=t.value;
+  else if(t.dataset.due&&(it=byId(t.dataset.due))){if(!t.value)return;it.due=t.value;toast('Due date moved to '+fmt(t.value)+'.')}
+  else if(t.dataset.step){const [id,i]=t.dataset.step.split('|');it=byId(id);if(it)it.steps[i].d=t.checked}
+  else return;
+  save();renderAll();
+});
+$('#pl-list').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b){state.items=state.items.filter(i=>i.id!==b.dataset.del);save();renderAll()}});
+$('#pl-list').addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.id){d.open?openIds.add(d.dataset.id):openIds.delete(d.dataset.id)}},true);
+$('#pl-filter').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;filter=b.dataset.f;
+  document.querySelectorAll('#pl-filter .chip').forEach(c=>c.setAttribute('aria-pressed',c===b));renderPlanner()});
+$('#pl-form').addEventListener('submit',e=>{
+  e.preventDefault();const title=$('#pl-title').value.trim();if(!title)return;
+  state.items.push({id:uid(),title,kind:$('#pl-kind').value,due:$('#pl-date').value,pri:$('#pl-pri').value,done:false,steps:[]});
+  $('#pl-title').value='';save();renderAll();toast('Added.');
+});
+$('#pl-clear').addEventListener('click',()=>{state.items=state.items.filter(i=>!i.ex);state.journal=state.journal.filter(j=>!j.ex);save();renderAll();toast('Example items removed.')});
+
+/* ---------- Feature 3: journal ---------- */
+function dayOfYear(){const n=new Date();return Math.floor((n-new Date(n.getFullYear(),0,0))/86400000)}
+const curPrompt=()=>PROMPTS[(dayOfYear()+(state.promptShift||0))%PROMPTS.length];
+function renderJournal(){
+  $('#jn-date').textContent=fmtLong(ds(new Date()));
+  $('#jn-prompt').textContent=curPrompt();
+  const list=$('#jn-list');
+  if(!state.journal.length){list.innerHTML='<div class="empty">Your saved entries will show up here.</div>';return}
+  list.innerHTML=state.journal.slice().sort((a,b)=>a.date===b.date?0:a.date<b.date?1:-1).map(j=>
+    '<article class="entry"><div class="when">'+fmtLong(j.date)+(j.ex?' · Example':'')+'</div><div class="q">'+esc(j.prompt)+'</div><div class="body">'+esc(j.text)+'</div><button class="linkbtn" type="button" data-jdel="'+j.id+'">Delete</button></article>').join('');
+}
+$('#jn-save').addEventListener('click',()=>{
+  const text=$('#jn-text').value.trim();if(!text){toast('Write something first.');return}
+  state.journal.push({id:uid(),date:ds(new Date()),prompt:curPrompt(),text});
+  $('#jn-text').value='';save();renderJournal();toast('Entry saved.');
+});
+$('#jn-shuffle').addEventListener('click',()=>{state.promptShift=(state.promptShift||0)+1;save();renderJournal()});
+$('#jn-list').addEventListener('click',e=>{const b=e.target.closest('[data-jdel]');if(b){state.journal=state.journal.filter(j=>j.id!==b.dataset.jdel);save();renderJournal()}});
+
+function renderAll(){renderSummary();renderPlanner();renderStepSelect();renderJournal()}
+
+/* ---------- start ---------- */
+$('#bd-title').value='History research essay';
+$('#bd-date').value=addDays(7);
+$('#pl-date').value=addDays(3);
+genDraft();paintTimer();renderAll();
+show(location.hash.slice(1));
+})();
+</script>
+
+</body></html>
